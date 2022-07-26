@@ -183,26 +183,43 @@ const DesktopNav = () => {
               </Box>
             </Box>
           ) : (
-            <Box>
-              <Box>
-                <Button
-                  p={2}
-                  fontSize={"1.25rem"}
-                  fontWeight={500}
-                  alignItems="center"
-                  color="white"
-                  bg="#235789"
-                  variant="disabled"
-                >
+            <Box key={navItem.label}>
+              <Popover trigger={"hover"} placement={"bottom-start"}>
+                <PopoverTrigger>
                   <Link
                     as={navItem.hash ? HashLink : ReactRouterLink}
                     to={navItem.href}
                     href={navItem.href ?? "#"}
                   >
-                    {navItem.label}
+                    <Button
+                      fontSize={"1.25rem"}
+                      fontWeight={500}
+                      alignItems="center"
+                      color="white"
+                      bg="#235789"
+                      variant="disabled"
+                    >
+                      {navItem.label}
+                    </Button>
                   </Link>
-                </Button>
-              </Box>
+                </PopoverTrigger>
+
+                {navItem.children && (
+                  <PopoverContent
+                    // border="5px solid white"
+                    p={4}
+                    // rounded={"xl"}
+                    minW={"sm"}
+                    bg="#235789"
+                  >
+                    <Stack>
+                      {navItem.children.map((child) => (
+                        <DesktopSubNav key={child.label} {...child} />
+                      ))}
+                    </Stack>
+                  </PopoverContent>
+                )}
+              </Popover>
             </Box>
           )}
         </Box>
@@ -219,7 +236,8 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
       display={"block"}
       p={2}
       rounded={"md"}
-      style={{ textDecoration: "none" }}
+      bg="#235789"
+      // style={{ textDecoration: "none" }}
     >
       <Stack direction={"row"} align={"center"}>
         <Box>
