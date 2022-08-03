@@ -1,71 +1,46 @@
 (express = require("express")), (router = express.Router());
 
-// Content Model
-let contentSchema = require("../models/Content");
+const Content = require("../models/Content");
 
-const CREATE_CONTENT_ROUTE = "/create-content";
-const RETRIEVE_CONTENT_ROUTE = "/retrieve-content";
+//TODO ensure routes fail gracefully
 
-// CREATE Content
-router.route(CREATE_CONTENT_ROUTE).post((req, res, next) => {
-  contentSchema.create(req.body, (error, data) => {
-    if (error) {
-      return next(error);
-    } else {
-      console.log(data);
-      res.json(data);
-    }
+// create content
+router.route("/").post(async (req, res) => {
+  const content = new Content({
+    stringifiedPage: req.body.stringifiedPage,
   });
+  await content.save();
+  res.send({ id: content._id });
 });
 
-// READ Content
-router.route(RETRIEVE_CONTENT_ROUTE).get((req, res) => {
-  contentSchema.find((error, data) => {
-    if (error) {
-      return next(error);
-    } else {
-      res.json(data);
-    }
-  });
+// read content
+router.route("/:id").get(async (req, res) => {
+  try {
+    const content = await Content.findOne({ _id: req.params.id });
+    res.send(content);
+  } catch (error) {
+    res.status(404);
+    res.send({ error: "content with specified id doesn't exist" });
+  }
 });
 
-// // Get Single Student
-// router.route('/edit-student/:id').get((req, res) => {
-//   studentSchema.findById(req.params.id, (error, data) => {
-//     if (error) {
-//       return next(error)
-//     } else {
-//       res.json(data)
-//     }
-//   })
-// })
+// update content
+router.route("/:id").put(async (req, res) => {
+  const updatedContent = {
+    _id: req.params.id,
+    stringifiedPage: req.body.stringifiedPage,
+  };
+  const contentQuery = await Content.findOneAndUpdate();
+  await contentQuery.save();
+  res.send(updatedContent);
+});
 
-// // Update Student
-// router.route('/update-student/:id').put((req, res, next) => {
-//   studentSchema.findByIdAndUpdate(req.params.id, {
-//     $set: req.body
-//   }, (error, data) => {
-//     if (error) {
-//       return next(error);
-//       console.log(error)
-//     } else {
-//       res.json(data)
-//       console.log('Student updated successfully !')
-//     }
-//   })
-// })
-
-// // Delete Student
-// router.route('/delete-student/:id').delete((req, res, next) => {
-//   studentSchema.findByIdAndRemove(req.params.id, (error, data) => {
-//     if (error) {
-//       return next(error);
-//     } else {
-//       res.status(200).json({
-//         msg: data
-//       })
-//     }
-//   })
-// })
+// delete content
+router.route("/:id").delete(async (req, res) => {
+  await Content.findByIdAndRemove({
+    _id: req.params.id,
+  });
+  res.send({ id: req.params.id });
+});
 
 module.exports = router;
