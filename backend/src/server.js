@@ -7,15 +7,24 @@ require("dotenv").config();
 
 const TAG = "server.js";
 const contentRoute = require("./routes/content.route");
-const BASE_ROUTE = "/content";
+const CONTENT_ROUTE_PATH = "/content";
 
-console.log("process.env.", process.env);
+//check for required environment variable
+if (
+  !process.env.MONGO_DB_HOST ||
+  !process.env.MONGO_DB_NAME ||
+  !process.env.WRITE_ACCESS_KEY
+) {
+  console.log(
+    TAG,
+    "At least one required environment variable (MONGO_DB_HOST, MONGO_DB_NAME and WRITE_ACCESS_KEY) is not set. Exiting..."
+  );
+  process.exit(1);
+}
 
 // connect mongoDB database
 const DATABASE_PATH =
   "mongodb://" + process.env.MONGO_DB_HOST + "/" + process.env.MONGO_DB_NAME;
-
-// check if required env vars are available. exit app , if not . print reason
 
 mongoose.Promise = global.Promise;
 mongoose
@@ -28,7 +37,7 @@ mongoose
     },
     (error) => {
       console.log(TAG, "Could not connect to database : " + error);
-      //TODO exit app
+      process.exit(1);
     }
   );
 
@@ -41,14 +50,14 @@ app.use(
   })
 );
 app.use(cors());
-app.use(BASE_ROUTE, contentRoute);
+app.use(CONTENT_ROUTE_PATH, contentRoute);
 
-const port = process.env.PORT || 4001;
+const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {
-  console.log(TAG, "Connected to port " + port);
+  console.log(TAG, "Server listening at port " + port);
 });
 
-// handle errors
+// handle server errors
 app.use((req, res, next) => {
   next(createError(404));
 });

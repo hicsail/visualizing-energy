@@ -1,59 +1,80 @@
 (express = require("express")), (router = express.Router());
 
 const Content = require("../models/Content");
-const {verifyWriteAccess} = require("../utils");
-
-//TODO ensure routes fail gracefully. 
-//decide what happens when null is returned. 
-//check payload health for write ops
-//use try catch for "unamed errors"
+const { verifyWriteAccess, verifyWritePayload } = require("../utils");
+const UNKNOWN_ERROR = "Internal server error";
+const validateWriteRequest = [verifyWriteAccess, verifyWritePayload];
 
 // create content
-router.route("/").post(verifyWriteAccess, async (req, res) => {
+router.route("/").post(validateWriteRequest, async (req, res) => {
+  try {
     const content = new Content({
       stringifiedPage: req.body.stringifiedPage,
     });
     await content.save();
     res.send({ id: content._id });
+  } catch (error) {
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
+  }
 });
 
 //read all ids
 router.route("/ids").get(async (req, res) => {
-  //return empty array if no ids found
-  var contentIds = []
-  contentIds = await  Content.find({program: {$in: ["_id"]}})
-      .distinct('_id')
-  res.send(contentIds);
+  try {
+    const contentIds = await Content.find({
+      program: { $in: ["_id"] },
+    }).distinct("_id");
+    res.send(contentIds);
+  } catch (error) {
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
+  }
 });
 
 // read content
 router.route("/:id").get(async (req, res) => {
   try {
     const content = await Content.findOne({ _id: req.params.id });
-    res.send(content);
+    if (content == null) {
+      res.status(404);
+      res.send({ error: "content with specified id doesn't exist" });
+    } else {
+      res.send(content);
+    }
   } catch (error) {
-    res.status(404); //consider other codes for null and error
-    res.send({ error: "content with specified id doesn't exist" });
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
   }
 });
 
 // update content
-router.route("/:id").put(async (req, res) => {
-  const updatedContent = {
-    _id: req.params.id,
-    stringifiedPage: req.body.stringifiedPage,
-  };
-  const contentQuery = await Content.findOneAndUpdate();
-  await contentQuery.save();
-  res.send(updatedContent);
+router.route("/:id").put(validateWriteRequest, async (req, res) => {
+  try {
+    const updatedContent = {
+      _id: req.params.id,
+      stringifiedPage: req.body.stringifiedPage,
+    };
+    const contentQuery = await Content.findOneAndUpdate();
+    await contentQuery.save();
+    res.send(updatedContent);
+  } catch (error) {
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
+  }
 });
 
 // delete content
-router.route("/:id").delete(async (req, res) => {
-  await Content.findByIdAndRemove({
-    _id: req.params.id,
-  });
-  res.send({ id: req.params.id });
+router.route("/:id").delete(verifyWriteAccess, async (req, res) => {
+  try {
+    await Content.findByIdAndRemove({
+      _id: req.params.id,
+    });
+    res.send({ id: req.params.id });
+  } catch (error) {
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
+  }
 });
 
 module.exports = router;
