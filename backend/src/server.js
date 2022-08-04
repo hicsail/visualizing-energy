@@ -9,6 +9,8 @@ const TAG = "server.js";
 const contentRoute = require("./routes/content.route");
 const BASE_ROUTE = "/content";
 
+console.log("process.env.", process.env);
+
 // connect mongoDB database
 const DATABASE_PATH =
   "mongodb://" + process.env.MONGO_DB_HOST + "/" + process.env.MONGO_DB_NAME;
@@ -37,7 +39,7 @@ app.use(
 app.use(cors());
 app.use(BASE_ROUTE, contentRoute);
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4001;
 const server = app.listen(port, () => {
   console.log(TAG, "Connected to port " + port);
 });
