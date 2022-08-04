@@ -14,6 +14,9 @@ console.log("process.env.", process.env);
 // connect mongoDB database
 const DATABASE_PATH =
   "mongodb://" + process.env.MONGO_DB_HOST + "/" + process.env.MONGO_DB_NAME;
+
+// check if required env vars are available. exit app , if not . print reason
+
 mongoose.Promise = global.Promise;
 mongoose
   .connect(DATABASE_PATH, {
@@ -25,6 +28,7 @@ mongoose
     },
     (error) => {
       console.log(TAG, "Could not connect to database : " + error);
+      //TODO exit app
     }
   );
 
