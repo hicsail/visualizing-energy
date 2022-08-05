@@ -79,6 +79,8 @@ const LIST_TYPES = ["numbered-list", "bulleted-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 var storageIdString;
 const TableauEditor = (props) => {
+  const [initialValue, setinitialValue] = useState("");
+
   storageIdString = JSON.stringify(props.storageId);
 
   const editor = useMemo(
@@ -96,8 +98,19 @@ const TableauEditor = (props) => {
 
   useEffect(() => {
     async function getContent() {
-      const response = await fetch();
+      const response = await fetch(`localhost:4000/${props.storageId}`, {
+        method: "GET",
+      });
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+      const val = await response.json();
+      setinitialValue(val);
     }
+
+    getContent();
   }, []);
 
   //   const initialValue = useMemo(
@@ -121,8 +134,16 @@ const TableauEditor = (props) => {
         );
         if (isAstChange) {
           // Save the value to Local Storage.
-          const content = JSON.stringify(value);
-          localStorage.setItem(storageIdString, content);
+          try {
+            const response = await fetch(`localhost:4000/${props.storageId}`, {
+                method: "PUT",
+                body: JSON.stringify(value)
+              });
+          } catch (e){
+              console.log(e)
+          }
+        //   const content = JSON.stringify(value);
+        //   localStorage.setItem(storageIdString, content);
         }
       }}
     >
