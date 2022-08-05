@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { BrowserRouter as Router, Link } from "react-router-dom";
+// import { BrowserRouter as Router, Link } from "react-router-dom";
+import { HashRouter as Router, Link } from "react-router-dom";
+
 import { Box, Flex } from "@chakra-ui/react";
 import { Main } from "./Main";
 import { Navigation } from "../components/Navigation";
