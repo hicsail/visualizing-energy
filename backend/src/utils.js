@@ -7,10 +7,10 @@ const PAYLOAD_ERROR =
  * @param req http or https request
  * @returns boolean
  */
-function hasWriteAccess(req, res, next) {
+function hasWriteAccess(req) {
   return (
     req.headers.authorization &&
-    req.headers.authorization == process.env.WRITE_ACCESS_KEY
+    atob(req.headers.authorization) == process.env.WRITE_ACCESS_KEY
   );
 }
 

@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "backend for viz-Energy",
-  "main": "./src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
+  "main": "src/index.js",
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -17,6 +17,12 @@
     "mongoose": "^6.5.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "jest": "^28.1.3",
+    "mongodb-memory-server": "^8.8.0",
+    "nodemon": "^2.0.19",
+    "supertest": "^6.2.4"
+  },
+  "jest": {
+    "collectCoverage": true
   }
 }
