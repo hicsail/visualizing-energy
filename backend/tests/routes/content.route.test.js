@@ -1,7 +1,7 @@
 let supertest = require("supertest");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 let startServer = require("../../src/server");
-const app = startServer();
+const { app, server } = startServer();
 let mongoose = require("mongoose");
 const CONTENT_ROUTE_PATH = "/content/";
 
@@ -20,6 +20,7 @@ describe("/content", () => {
   afterAll(async () => {
     await mongoose.disconnect();
     await mongoose.connection.close();
+    server.close();
   });
 
   describe("read routes", () => {

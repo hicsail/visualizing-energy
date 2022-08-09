@@ -6,7 +6,10 @@ require("dotenv").config();
 
 const TAG = "server.js";
 const contentRoute = require("./routes/content.route");
+const healthRoute = require("./routes/health.route");
+
 const CONTENT_ROUTE_PATH = "/content";
+const HEATLH_ROUTE_PATH = "/health";
 
 function startServer() {
   // start server
@@ -19,6 +22,7 @@ function startServer() {
   );
   app.use(cors());
   app.use(CONTENT_ROUTE_PATH, contentRoute);
+  app.use(HEATLH_ROUTE_PATH, healthRoute);
 
   const port = process.env.PORT || 4000;
   const server = app.listen(port, () => {
@@ -36,6 +40,6 @@ function startServer() {
     res.status(err.statusCode).send(err.message);
   });
 
-  return app;
+  return { app: app, server: server };
 }
 module.exports = startServer;

@@ -5,6 +5,16 @@ const { verifyWriteAccess, verifyWritePayload } = require("../utils");
 const UNKNOWN_ERROR = "Internal server error";
 const validateWriteRequest = [verifyWriteAccess, verifyWritePayload];
 
+//health check
+router.route("/").get(async (req, res) => {
+  try {
+    res.send("ok");
+  } catch (error) {
+    res.status(500);
+    res.send({ error: UNKNOWN_ERROR });
+  }
+});
+
 // create content
 router.route("/").post(validateWriteRequest, async (req, res) => {
   try {
