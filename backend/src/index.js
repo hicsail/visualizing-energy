@@ -31,7 +31,12 @@ mongoose
       console.log(TAG, "Database sucessfully connected!");
     },
     (error) => {
-      console.log(TAG, "Could not connect to database : " + error);
+      console.log(
+        TAG,
+        "Could not connect to database on path",
+        DATABASE_PATH,
+        ".Error: " + error
+      );
       process.exit(1);
     }
   );

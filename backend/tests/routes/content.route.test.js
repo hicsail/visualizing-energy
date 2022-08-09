@@ -9,7 +9,7 @@ describe("/content", () => {
   const sampleWritePayload = {
     stringifiedPage: "page information",
   };
-  const sampleWriteKey = btoa("secretKey");
+  const sampleWriteKey = Buffer.from("secretKey").toString("base64");
 
   beforeAll(async () => {
     const mongoServer = await MongoMemoryServer.create();

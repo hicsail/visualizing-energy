@@ -10,7 +10,8 @@ const PAYLOAD_ERROR =
 function hasWriteAccess(req) {
   return (
     req.headers.authorization &&
-    atob(req.headers.authorization) == process.env.WRITE_ACCESS_KEY
+    Buffer.from(req.headers.authorization, "base64").toString() ==
+      process.env.WRITE_ACCESS_KEY
   );
 }
 
