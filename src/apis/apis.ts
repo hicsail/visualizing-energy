@@ -2,17 +2,19 @@ const VIZ_ENERGY_API_BASE_URL = "http://199.94.60.97:4000/content/";
 var commonHeaders = {
   Accept: "application/json",
   "Content-Type": "application/json;charset=UTF-8",
-  Authorization: btoa("secretKey"),
 };
 
 const TAG = "apis.js ";
 
-async function createContent(content) {
+async function createContent(
+  content: { stringifiedPage: string },
+  writeKey: string
+) {
   const options = {
     method: "POST",
     headers: {
       ...commonHeaders,
-      Authorization: btoa("secretKey"),
+      Authorization: btoa(writeKey),
     },
     body: JSON.stringify(content),
   };
@@ -26,7 +28,7 @@ async function createContent(content) {
   }
 }
 
-async function readContent(contentId) {
+async function readContent(contentId: string) {
   const options = {
     method: "GET",
     headers: commonHeaders,
@@ -42,8 +44,3 @@ async function readContent(contentId) {
 }
 
 export { createContent, readContent };
-
-/**
- * sample Ids
- * 63039f53e72ed3705c700b07
- */

@@ -6,14 +6,22 @@ import { Navigation } from "../components/Navigation";
 import { UserContext } from "../UserContext";
 import Cookies from "js-cookie";
 import { Footer } from "../components/Footer";
+import { WriteKeyContext } from "../store/WriteKeyContext";
+const TAG = "Content.tsx ";
 
 export const Content = () => {
   const [isAdmin, setisAdmin] = useState(false);
-  const providerValue = useMemo(
-    () => ({ isAdmin, setisAdmin }),
-    [isAdmin, setisAdmin]
-  );
+  const [writeKey, setWriteKey] = useState(null);
+  console.log("writekey", writeKey);
 
+  // const providerValue = useMemo(
+  //   () => ({ isAdmin, setisAdmin }),
+  //   [isAdmin, setisAdmin]
+  // );
+  const providerValue = {
+    writeKey,
+    setWriteKey,
+  };
   const readCookie = () => {
     const user = Cookies.get("user");
     if (user) {
@@ -28,7 +36,7 @@ export const Content = () => {
   return (
     <Router>
       <Box width="100%" height="100%">
-        <UserContext.Provider value={providerValue}>
+        <WriteKeyContext.Provider value={providerValue}>
           <Flex
             direction="column"
             align="center"
@@ -56,7 +64,7 @@ export const Content = () => {
               <Footer />
             </Box>
           </Flex>
-        </UserContext.Provider>
+        </WriteKeyContext.Provider>
       </Box>
     </Router>
   );

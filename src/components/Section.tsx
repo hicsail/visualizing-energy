@@ -19,6 +19,8 @@ import React, { ReactElement } from "react";
 import { NullLiteral } from "typescript";
 import { Topic } from "../types/types";
 // import { Link } from "react-router-dom";
+// import { Link as ReactRouterLink} from "react-router"
+import { Link as ReactRouterLink } from "react-router-dom";
 
 export const Section = ({
   icon,
@@ -57,14 +59,14 @@ export const Section = ({
       </chakra.svg>
       <Box ml={4}>
         <Box fontWeight="700" color="lightgrey" pb="10px">
-          <Link href={href} fontSize={"1.25rem"}>
+          <Link as={ReactRouterLink} to={href} fontSize={"1.25rem"}>
             {" "}
             {title}
           </Link>
         </Box>
         {topicList?.map((subtopic) => (
           <Box key={subtopic.title}>
-            <Link href={subtopic.href} fontSize={"1.25rem"}>
+            <Link as={ReactRouterLink} to={subtopic.href} fontSize={"1.25rem"}>
               {" "}
               {subtopic.title}
             </Link>

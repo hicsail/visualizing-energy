@@ -9,8 +9,6 @@ import { createContent, readContent } from "../apis/apis";
 const TAG = "HomePage.tsx ";
 
 export const Home = () => {
-  const { isAdmin, setisAdmin } = useContext(UserContext);
-
   const l = async () => {
     const r = await readContent("63039f53e72ed3705c700b07");
     console.log(TAG, "r", r);
