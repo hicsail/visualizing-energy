@@ -1,8 +1,11 @@
 (express = require("express")), (router = express.Router());
 
 const Content = require("../models/Content");
-const { verifyWriteAccess, verifyWritePayload } = require("../utils");
-const UNKNOWN_ERROR = "Internal server error";
+const {
+  verifyWriteAccess,
+  verifyWritePayload,
+  handleUnknownError,
+} = require("../utils");
 const validateWriteRequest = [verifyWriteAccess, verifyWritePayload];
 
 //health check
@@ -10,8 +13,7 @@ router.route("/").get(async (req, res) => {
   try {
     res.send("ok");
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 
@@ -24,8 +26,7 @@ router.route("/").post(validateWriteRequest, async (req, res) => {
     await content.save();
     res.send({ id: content._id });
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 
@@ -37,8 +38,7 @@ router.route("/ids").get(async (req, res) => {
     }).distinct("_id");
     res.send(contentIds);
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 
@@ -53,24 +53,24 @@ router.route("/:id").get(async (req, res) => {
       res.send(content);
     }
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 
 // update content
 router.route("/:id").put(validateWriteRequest, async (req, res) => {
   try {
-    const updatedContent = {
-      _id: req.params.id,
-      stringifiedPage: req.body.stringifiedPage,
-    };
-    const contentQuery = await Content.findOneAndUpdate();
-    await contentQuery.save();
-    res.send(updatedContent);
+    const content = await Content.findOne({ _id: req.params.id });
+    if (content == null) {
+      res.status(404);
+      res.send({ error: "content with specified id doesn't exist" });
+    } else {
+      content.stringifiedPage = req.body.stringifiedPage;
+      const updateResults = await content.save();
+      res.send(updateResults);
+    }
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 
@@ -82,8 +82,7 @@ router.route("/:id").delete(verifyWriteAccess, async (req, res) => {
     });
     res.send({ id: req.params.id });
   } catch (error) {
-    res.status(500);
-    res.send({ error: UNKNOWN_ERROR });
+    handleUnknownError(res, error);
   }
 });
 

@@ -91,18 +91,21 @@ describe("/content", () => {
       });
 
       it("update request should succeed and return status code 200 ", async () => {
-        sampleWritePayload.stringifiedPage = "updated page";
-        await supertest(app)
+        const postRequestResponse = await supertest(app)
           .post(CONTENT_ROUTE_PATH)
           .set("Authorization", sampleWriteKey)
           .send(sampleWritePayload);
 
+        sampleWritePayload.stringifiedPage = "updated page";
         const putRequestResponse = await supertest(app)
-          .put(CONTENT_ROUTE_PATH + sampleId)
+          .put(CONTENT_ROUTE_PATH + postRequestResponse.body.id)
           .set("Authorization", sampleWriteKey)
           .send(sampleWritePayload);
 
         expect(putRequestResponse.statusCode).toBe(200);
+        expect(putRequestResponse.body.stringifiedPage).toBe(
+          sampleWritePayload.stringifiedPage
+        );
       });
 
       it("delete request should succeed and return status code 200", async () => {

@@ -1,7 +1,9 @@
 const WRITE_ACCESS_ERROR = "No write access authorization found";
 const PAYLOAD_ERROR =
   "Payload is faulty. Expected payload structure is {stringifiedPage:string}";
+const UNKNOWN_ERROR = "Internal server error";
 
+const TAG = "utils.js ";
 /**
  * determines if a request has the expected authorization is its headers to allow write privileges
  * @param req http or https request
@@ -51,4 +53,10 @@ function verifyWritePayload(req, res, next) {
   }
 }
 
-module.exports = { verifyWriteAccess, verifyWritePayload };
+function handleUnknownError(res, error) {
+  console.log(TAG, "Error:", error);
+  res.status(500);
+  res.send({ error: UNKNOWN_ERROR });
+}
+
+module.exports = { verifyWriteAccess, verifyWritePayload, handleUnknownError };
