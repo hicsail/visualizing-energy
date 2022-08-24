@@ -43,6 +43,7 @@ import {
   Heading,
   Divider,
   SimpleGrid,
+  Spinner,
 } from "@chakra-ui/react";
 import PlainText from "./PlainText";
 import RichText from "./RichText";
@@ -68,7 +69,7 @@ import {
 import { AiOutlineFontSize, AiOutlineFontColors } from "react-icons/ai";
 import "../components/resizable.css";
 import { WriteKeyContext } from "../store/WriteKeyContext";
-import { createContent, readContent } from "../apis/apis";
+import { readContent, updateContent, createContent } from "../apis/apis";
 
 const HOTKEYS = {
   "mod+b": "bold",
@@ -84,17 +85,9 @@ const TAG = "TableauEditor.js ";
 const TableauEditor = (props) => {
   storageIdString = JSON.stringify(props.storageId);
 
-  useEffect(() => {
-    l();
-  });
-
-  const l = async () => {
-    const response = await createContent(
-      { stringifiedPage: "4:03pm Aug 22" },
-      writeKey
-    );
-    console.log(TAG, "response", response);
-  };
+  //   useEffect(() => {
+  //     l();
+  //   });
 
   const editor = useMemo(
     () =>
@@ -109,31 +102,99 @@ const TableauEditor = (props) => {
     []
   );
 
-  const initialValue = useMemo(
-    () =>
-      JSON.parse(localStorage.getItem(storageIdString)) || props.initialValue,
-    [props.initialValue]
-  );
+  //   const initialValue = useMemo(
+  //     () =>
+  //       JSON.parse(localStorage.getItem(storageIdString)) || props.initialValue,
+  //     [props.initialValue]
+  //   );
 
+  const [initialValue, setInitialValue] = useState([]);
+  //   const initialValue = [
+  //     {
+  //       type: "paragraph",
+  //       children: [{ text: "A line of text in a paragraph." }],
+  //     },
+  //   ];
   // const [isReadOnly, setisReadOnly] = useState(false);
-  const { writeKey } = useContext(WriteKeyContext);
+  //   const { writeKey } = useContext(WriteKeyContext);
+  const writeKey = "secretKey";
   console.log(TAG, "loaded key", writeKey);
+  console.log(TAG, "page id", props.storageId);
 
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
+  const loadPage = async () => {
+    const response = await readContent(props.storageId);
+    console.log(TAG, "response", response);
+    if (response) {
+      setInitialValue(JSON.parse(response));
+      console.log(TAG, "parsed response", JSON.parse(response));
+    } else {
+      console.log("Page with id not found");
+    }
+  };
+
+  useEffect(() => {
+    loadPage();
+    // createPage([
+    //   {
+    //     type: "paragraph",
+    //     children: [{ text: "A line of text in a paragraph." }],
+    //   },
+    // ]);
+    savePage([
+      {
+        type: "paragraph",
+        children: [
+          { text: "A line of text in a paragraph. with some updates" },
+        ],
+      },
+    ]);
+  }, []);
+
+  async function createPage(pageObject) {
+    const res = await createContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+      },
+      writeKey
+    );
+    console.log("res", res);
+  }
+
+  async function savePage(pageObject) {
+    const res = await updateContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+        id: props.storageId,
+      },
+      writeKey
+    );
+    console.log("res", res);
+  }
+
+  if (initialValue.length == 0) {
+    return <Spinner />;
+  }
 
   return (
     <Slate
       editor={editor}
       value={initialValue}
       onChange={(value) => {
+        console.log(TAG, "raw value", value);
+
         const isAstChange = editor.operations.some(
           (op) => "set_selection" !== op.type
         );
         if (isAstChange) {
           // Save the value to Local Storage.
-          const content = JSON.stringify(value);
-          localStorage.setItem(storageIdString, content);
+          //   const content = JSON.stringify(value);
+          //   localStorage.setItem(storageIdString, content);
+          console.log(TAG, " saving to database");
+
+          savePage(value);
         }
       }}
     >
@@ -584,15 +645,26 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
                 )}
 
                 {writeKey ? (
-                  <Button
-                    onClick={() =>
-                      Transforms.removeNodes(editor, {
-                        at: path,
-                      })
-                    }
-                  >
-                    Delete
-                  </Button>
+                  <>
+                    <Button
+                      onClick={() =>
+                        Transforms.removeNodes(editor, {
+                          at: path,
+                        })
+                      }
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        Transforms.removeNodes(editor, {
+                          at: path,
+                        })
+                      }
+                    >
+                      Save
+                    </Button>
+                  </>
                 ) : (
                   <></>
                 )}

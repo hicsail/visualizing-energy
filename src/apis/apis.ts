@@ -28,6 +28,28 @@ async function createContent(
   }
 }
 
+async function updateContent(
+  content: { stringifiedPage: string; id: string },
+  writeKey: string
+) {
+  const options = {
+    method: "PUT",
+    headers: {
+      ...commonHeaders,
+      Authorization: btoa(writeKey),
+    },
+    body: JSON.stringify(content),
+  };
+  try {
+    const response = await fetch(VIZ_ENERGY_API_BASE_URL + content.id, options);
+    const data = await response.json();
+    return data.id;
+  } catch (error) {
+    console.log(TAG, "Error updating content");
+    return null;
+  }
+}
+
 async function readContent(contentId: string) {
   const options = {
     method: "GET",
@@ -43,4 +65,4 @@ async function readContent(contentId: string) {
   }
 }
 
-export { createContent, readContent };
+export { createContent, readContent, updateContent };
