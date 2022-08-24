@@ -16,6 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { Stack } from "immutable";
 import React, { ReactElement } from "react";
+import { HashLink } from "react-router-hash-link";
 import { NullLiteral } from "typescript";
 import { Topic } from "../types/types";
 // import { Link } from "react-router-dom";
@@ -57,14 +58,14 @@ export const Section = ({
       </chakra.svg>
       <Box ml={4}>
         <Box fontWeight="700" color="lightgrey" pb="10px">
-          <Link href={href} fontSize={"1.25rem"}>
+          <Link to={href} fontSize={"1.25rem"} as={HashLink}>
             {" "}
             {title}
           </Link>
         </Box>
         {topicList?.map((subtopic) => (
           <Box key={subtopic.title}>
-            <Link href={subtopic.href} fontSize={"1.25rem"}>
+            <Link to={subtopic.href} fontSize={"1.25rem"} as={HashLink}>
               {" "}
               {subtopic.title}
             </Link>
