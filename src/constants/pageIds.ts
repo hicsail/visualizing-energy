@@ -1,5 +1,5 @@
 /**
- * id of each page alreadyt created in database. admins can update page.
+ * id of pages already created in database. admins can update page.
  */
 
 //For topics
@@ -11,7 +11,7 @@ export enum PAGE_IDS {
   GENERATION = "630794014df4decee6ec0c55",
   NUCLEAR = "6307940d4df4decee6ec0c59",
   PRICE = "630794184df4decee6ec0c5b",
-  REACTORS = "630785b504b0cb873be8cef2", // "6306486e11668a2dfe3be5c4", // "63062cb9158f52c1a3616031", //6304ee4ce72ed3705c700b27", //"63039f53e72ed3705c700b07",
+  REACTORS = "630785b504b0cb873be8cef2",
   TRADE = "630794344df4decee6ec0c5f",
   URANIUM = "630794864df4decee6ec0c71",
   WASTE = "630794484df4decee6ec0c65",

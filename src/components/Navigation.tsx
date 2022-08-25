@@ -54,7 +54,8 @@ export const Navigation = () => {
           width="100%"
           marginLeft="0px"
         >
-          <Link as={ReactRouterLink} to="/">
+          {/* <Link as={ReactRouterLink} to="/"> */}
+          <Link as={HashLink} to="/">
             <Flex
               fontFamily={"heading"}
               display={{ base: "none", md: "flex" }}
@@ -203,7 +204,8 @@ const DesktopNav = () => {
               <Popover trigger={"hover"} placement={"bottom-start"}>
                 <PopoverTrigger>
                   <Link
-                    as={navItem.hash ? HashLink : ReactRouterLink}
+                    // as={navItem.hash ? HashLink : ReactRouterLink}
+                    as={HashLink}
                     to={navItem.href}
                     // href={navItem.href ?? "#"}
                   >
@@ -300,7 +302,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
     <Stack spacing={4} onClick={children && onToggle}>
       <Flex
         py={2}
-        as={Link}
+        // as={HashLink}
         // href={href ?? "#"}
         // href={href}
         justify={"space-between"}

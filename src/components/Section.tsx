@@ -16,6 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { Stack } from "immutable";
 import React, { ReactElement } from "react";
+import { HashLink } from "react-router-hash-link";
 import { NullLiteral } from "typescript";
 import { Topic } from "../types/types";
 // import { Link } from "react-router-dom";

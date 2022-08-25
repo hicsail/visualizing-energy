@@ -3,7 +3,7 @@ import { FooterItem } from "../types/types";
 export const FOOTER_ITEMS: Array<FooterItem> = [
   {
     label: "@ 2022 VizEnergy",
-    href: "/home",
+    href: "/",
     hash: false,
   },
   // {
@@ -33,12 +33,12 @@ export const FOOTER_ITEMS: Array<FooterItem> = [
   },
   {
     label: "Linked In",
-    href: "/linkedin",
+    href: "",
     hash: false,
   },
   {
     label: "Twitter",
-    href: "/twitter",
+    href: "",
     hash: false,
   },
   {
