@@ -79,16 +79,9 @@ const HOTKEYS = {
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
-var storageIdString;
 const TAG = "TableauEditor.js ";
 
 const TableauEditor = (props) => {
-  storageIdString = JSON.stringify(props.storageId);
-
-  //   useEffect(() => {
-  //     l();
-  //   });
-
   const editor = useMemo(
     () =>
       withTableauwithTextHTML(
@@ -102,27 +95,34 @@ const TableauEditor = (props) => {
     []
   );
 
-  //   const initialValue = useMemo(
-  //     () =>
-  //       JSON.parse(localStorage.getItem(storageIdString)) || props.initialValue,
-  //     [props.initialValue]
-  //   );
-
   const [initialValue, setInitialValue] = useState([]);
-  //   const initialValue = [
-  //     {
-  //       type: "paragraph",
-  //       children: [{ text: "A line of text in a paragraph." }],
-  //     },
-  //   ];
+
   // const [isReadOnly, setisReadOnly] = useState(false);
-  //   const { writeKey } = useContext(WriteKeyContext);
-  const writeKey = "secretKey";
+  const { writeKey } = useContext(WriteKeyContext);
   console.log(TAG, "loaded key", writeKey);
   console.log(TAG, "page id", props.storageId);
 
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
+  async function createPage(pageObject) {
+    const res = await createContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+      },
+      writeKey
+    );
+  }
+
+  async function savePage(pageObject) {
+    const res = await updateContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+        id: props.storageId,
+      },
+      writeKey
+    );
+  }
 
   const loadPage = async () => {
     const response = await readContent(props.storageId);
@@ -137,42 +137,7 @@ const TableauEditor = (props) => {
 
   useEffect(() => {
     loadPage();
-    // createPage([
-    //   {
-    //     type: "paragraph",
-    //     children: [{ text: "A line of text in a paragraph." }],
-    //   },
-    // ]);
-    savePage([
-      {
-        type: "paragraph",
-        children: [
-          { text: "A line of text in a paragraph. with some updates" },
-        ],
-      },
-    ]);
   }, []);
-
-  async function createPage(pageObject) {
-    const res = await createContent(
-      {
-        stringifiedPage: JSON.stringify(pageObject),
-      },
-      writeKey
-    );
-    console.log("res", res);
-  }
-
-  async function savePage(pageObject) {
-    const res = await updateContent(
-      {
-        stringifiedPage: JSON.stringify(pageObject),
-        id: props.storageId,
-      },
-      writeKey
-    );
-    console.log("res", res);
-  }
 
   if (initialValue.length == 0) {
     return <Spinner />;
@@ -189,11 +154,6 @@ const TableauEditor = (props) => {
           (op) => "set_selection" !== op.type
         );
         if (isAstChange) {
-          // Save the value to Local Storage.
-          //   const content = JSON.stringify(value);
-          //   localStorage.setItem(storageIdString, content);
-          console.log(TAG, " saving to database");
-
           savePage(value);
         }
       }}
@@ -1020,7 +980,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                 {/* <PlainText /> */}
                 <Box height="100%">
                   <RichText
-                    storageId={storageIdString + "storage"}
+                    storageId={"storage"}
                     initialValue={[
                       {
                         type: "paragraph",
