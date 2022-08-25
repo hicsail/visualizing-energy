@@ -43,10 +43,10 @@ import {
   Heading,
   Divider,
   SimpleGrid,
+  Spinner,
 } from "@chakra-ui/react";
 import PlainText from "./PlainText";
 import RichText from "./RichText";
-import { UserContext } from "../UserContext";
 // import TableauEmbed from "./TableauEmbed";
 // import TableauEmbedIFrame from "./TableauEmbedIFrame";
 import { ResizableBox } from "react-resizable";
@@ -68,6 +68,8 @@ import {
 } from "react-icons/tb";
 import { AiOutlineFontSize, AiOutlineFontColors } from "react-icons/ai";
 import "../components/resizable.css";
+import { WriteKeyContext } from "../store/WriteKeyContext";
+import { readContent, updateContent, createContent } from "../apis/apis";
 
 const HOTKEYS = {
   "mod+b": "bold",
@@ -77,12 +79,9 @@ const HOTKEYS = {
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
-var storageIdString;
+const TAG = "TableauEditor.js ";
+
 const TableauEditor = (props) => {
-  const [initialValue, setinitialValue] = useState("");
-
-  storageIdString = JSON.stringify(props.storageId);
-
   const editor = useMemo(
     () =>
       withTableauwithTextHTML(
@@ -96,63 +95,76 @@ const TableauEditor = (props) => {
     []
   );
 
-  useEffect(() => {
-    async function getContent() {
-      const response = await fetch(`localhost:4000/${props.storageId}`, {
-        method: "GET",
-      });
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-      const val = await response.json();
-      setinitialValue(val);
-    }
-
-    getContent();
-  }, []);
-
-  //   const initialValue = useMemo(
-  //     () =>
-  //       JSON.parse(localStorage.getItem(storageIdString)) || props.initialValue,
-  //     [props.initialValue]
-  //   );
+  const [initialValue, setInitialValue] = useState([]);
 
   // const [isReadOnly, setisReadOnly] = useState(false);
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
+  console.log(TAG, "loaded key", writeKey);
+  console.log(TAG, "page id", props.storageId);
+
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
+  async function createPage(pageObject) {
+    const res = await createContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+      },
+      writeKey
+    );
+    console.log("page creation res", res);
+  }
+
+  async function savePage(pageObject) {
+    const res = await updateContent(
+      {
+        stringifiedPage: JSON.stringify(pageObject),
+        id: props.storageId,
+      },
+      writeKey
+    );
+  }
+
+  const loadPage = async () => {
+    const response = await readContent(props.storageId);
+    console.log(TAG, "response", response);
+    if (response) {
+      setInitialValue(JSON.parse(response));
+      console.log(TAG, "parsed response", JSON.parse(response));
+    } else {
+      console.log("Page with id not found");
+    }
+  };
+
+  useEffect(() => {
+    loadPage();
+  }, []);
+
+  if (initialValue.length == 0) {
+    return <Spinner />;
+  }
 
   return (
     <Slate
       editor={editor}
       value={initialValue}
       onChange={(value) => {
+        console.log(TAG, "raw value", value);
+
         const isAstChange = editor.operations.some(
           (op) => "set_selection" !== op.type
         );
         if (isAstChange) {
-          // Save the value to Local Storage.
-          try {
-            const response = await fetch(`localhost:4000/${props.storageId}`, {
-                method: "PUT",
-                body: JSON.stringify(value)
-              });
-          } catch (e){
-              console.log(e)
-          }
-        //   const content = JSON.stringify(value);
-        //   localStorage.setItem(storageIdString, content);
+          savePage(value);
         }
       }}
     >
-      {isAdmin ? (
+      {writeKey ? (
         <Box
           position="relative"
           borderBottom="2px solid #eee"
           borderTop="2px solid #eee"
-          display={isAdmin ? "" : "none"}
+          display={writeKey ? "" : "none"}
         >
           <Box borderBottom="2px solid #eee" padding="8px 0px 8px 0px">
             <MarkButton format="bold" icon="format_bold" />
@@ -185,7 +197,7 @@ const TableauEditor = (props) => {
       )}
 
       <Editable
-        readOnly={!isAdmin}
+        readOnly={!writeKey}
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         placeholder="Enter some text..."
@@ -501,7 +513,8 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
     width,
     centerPosition,
   } = element;
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
+
   const selected = useSelected();
   const focused = useFocused();
   const [resizeInProgress, setResizeInProgress] = React.useState(false);
@@ -529,7 +542,7 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
     <div {...attributes}>
       <div contentEditable={false}>
         <Box boxShadow={selected && focused ? "0 0 0 3px #B4D5FF" : "none"}>
-          {isAdmin ? (
+          {writeKey ? (
             <Slider
               aria-label="slider-ex-1"
               onChangeEnd={(val) => setSliderValue(val)}
@@ -550,7 +563,7 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
               </Box>
               <Box width={(100 - sliderValue).toString() + "%"}>
                 {/* <tableau-viz id={containerName} src={url}></tableau-viz> */}
-                {isAdmin ? (
+                {writeKey ? (
                   <ResizableBox
                     ref={leftRef}
                     width={width}
@@ -592,16 +605,27 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
                   </Box>
                 )}
 
-                {isAdmin ? (
-                  <Button
-                    onClick={() =>
-                      Transforms.removeNodes(editor, {
-                        at: path,
-                      })
-                    }
-                  >
-                    Delete
-                  </Button>
+                {writeKey ? (
+                  <>
+                    <Button
+                      onClick={() =>
+                        Transforms.removeNodes(editor, {
+                          at: path,
+                        })
+                      }
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        Transforms.removeNodes(editor, {
+                          at: path,
+                        })
+                      }
+                    >
+                      Save
+                    </Button>
+                  </>
                 ) : (
                   <></>
                 )}
@@ -611,7 +635,7 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
             <Box display="flex" alignItems="center">
               <Box width={sliderValue.toString() + "%"}>
                 {/* <tableau-viz id={containerName} src={url}></tableau-viz> */}
-                {isAdmin ? (
+                {writeKey ? (
                   <ResizableBox
                     ref={rightRef}
                     width={width}
@@ -653,7 +677,7 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
                   </Box>
                 )}
 
-                {isAdmin ? (
+                {writeKey ? (
                   <Button
                     onClick={() =>
                       Transforms.removeNodes(editor, {
@@ -682,7 +706,7 @@ const TableauWithTextElement = ({ attributes, children, element }) => {
 const TableauElement = ({ attributes, children, element }) => {
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
   const selected = useSelected();
   const focused = useFocused();
   const [resizeInProgress, setResizeInProgress] = React.useState(false);
@@ -700,7 +724,7 @@ const TableauElement = ({ attributes, children, element }) => {
     <div {...attributes}>
       <div contentEditable={false}>
         <Box boxShadow={selected && focused ? "0 0 0 3px #B4D5FF" : "none"}>
-          {isAdmin ? (
+          {writeKey ? (
             <ResizableBox
               ref={ElementRef}
               width={width}
@@ -741,7 +765,7 @@ const TableauElement = ({ attributes, children, element }) => {
               ></tableau-viz>
             </Box>
           )}
-          {isAdmin ? (
+          {writeKey ? (
             <Button
               onClick={() => Transforms.removeNodes(editor, { at: path })}
             >
@@ -760,7 +784,7 @@ const TableauElement = ({ attributes, children, element }) => {
 const TableauHTMLElement = ({ attributes, children, element }) => {
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
   const selected = useSelected();
   const focused = useFocused();
   const [resizeInProgress, setResizeInProgress] = useState(false);
@@ -801,7 +825,7 @@ const TableauHTMLElement = ({ attributes, children, element }) => {
             height="100%"
             maxHeight={height + "px"}
           >
-            {isAdmin ? (
+            {writeKey ? (
               <ResizableBox
                 ref={ElementRef}
                 width={width}
@@ -862,7 +886,7 @@ const TableauHTMLElement = ({ attributes, children, element }) => {
                 </Box>
               </Box>
             )}
-            {isAdmin ? (
+            {writeKey ? (
               <Button
                 onClick={() =>
                   Transforms.removeNodes(editor, {
@@ -899,7 +923,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
     height,
     centerPosition,
   } = element;
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
   const selected = useSelected();
   const focused = useFocused();
   const [resizeInProgress, setResizeInProgress] = React.useState(false);
@@ -937,7 +961,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
     <div {...attributes}>
       <div contentEditable={false}>
         <div>
-          {isAdmin ? (
+          {writeKey ? (
             <Slider
               aria-label="slider-ex-5"
               onChangeEnd={(val) => setSliderValue(val)}
@@ -957,7 +981,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                 {/* <PlainText /> */}
                 <Box height="100%">
                   <RichText
-                    storageId={storageIdString + "storage"}
+                    storageId={"storage"}
                     initialValue={[
                       {
                         type: "paragraph",
@@ -977,7 +1001,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                 // height="100%"
                 >
                   <Box>
-                    {isAdmin ? (
+                    {writeKey ? (
                       <ResizableBox
                         ref={leftRef}
                         width={width}
@@ -1029,7 +1053,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                       </Box>
                     )}
 
-                    {isAdmin ? (
+                    {writeKey ? (
                       <Button
                         onClick={() =>
                           Transforms.removeNodes(editor, {
@@ -1053,7 +1077,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                   // width="100%"
                   height="100%"
                 >
-                  {isAdmin ? (
+                  {writeKey ? (
                     <ResizableBox
                       ref={rightRef}
                       width={width}
@@ -1104,7 +1128,7 @@ const TableauWithTextHTMLElement = ({ attributes, children, element }) => {
                       </Box>
                     </Box>
                   )}
-                  {isAdmin ? (
+                  {writeKey ? (
                     <Button
                       onClick={() =>
                         Transforms.removeNodes(editor, {

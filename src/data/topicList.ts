@@ -167,7 +167,7 @@ export const NAV_ITEMS: Array<NavItem> = [
   {
     label: "Browse by Topic",
     href: "#",
-    hash: false,
+    hash: true,
   },
   {
     label: "About",

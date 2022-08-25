@@ -1,5 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import React, { useState, useRef, useContext } from "react";
+import { WriteKeyContext } from "../store/WriteKeyContext";
 import { UserContext } from "../UserContext";
 import { useResize } from "../utils/useResize";
 
@@ -36,7 +37,7 @@ const ResizableBox = ({ children, containerName }: any) => {
     step: 40,
   };
   const { initResize, size, cursor } = useResize(ref, options);
-  const { isAdmin, setisAdmin } = useContext(UserContext);
+  const { writeKey } = useContext(WriteKeyContext);
 
   return (
     <Box>
@@ -48,7 +49,7 @@ const ResizableBox = ({ children, containerName }: any) => {
       >
         {children(size)}
         <Box
-          display={isAdmin ? "inline-block" : "none"}
+          display={writeKey ? "inline-block" : "none"}
           cursor={cursor}
           onMouseDown={initResize}
           borderBottom="0 solid transparent"

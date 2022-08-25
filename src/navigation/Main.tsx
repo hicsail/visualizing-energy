@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Box } from "@chakra-ui/react";
 import { Routes, Route } from "react-router-dom";
 import { Home } from "../pages/HomePage";
@@ -39,8 +39,13 @@ import {
 } from "../pages/topics/renewable";
 import { Contact } from "../pages/ContactPage";
 import { Team } from "../pages/TeamPage";
+import { WriteKeyContext } from "../store/WriteKeyContext";
+const TAG = "Main.tsx ";
 
 export const Main = () => {
+  const { writeKey } = useContext(WriteKeyContext);
+  console.log(TAG, "writeKey", writeKey);
+
   return (
     <Box flexGrow={1} width="100%">
       <Routes>
