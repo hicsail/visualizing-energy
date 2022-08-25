@@ -112,6 +112,7 @@ const TableauEditor = (props) => {
       },
       writeKey
     );
+    console.log("page creation res", res);
   }
 
   async function savePage(pageObject) {
